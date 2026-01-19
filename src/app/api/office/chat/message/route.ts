@@ -38,12 +38,12 @@ export async function POST(request: NextRequest) {
     // Get system prompt from our prompts file
     const systemPrompt = getPersonaPrompt(personaId);
 
-    // Create streaming response using Claude (Anthropic-compatible)
+    // Create streaming response using Claude
     const stream = new ReadableStream({
       async start(controller) {
         try {
           const messageStream = await claudeClient.messages.create({
-            model: 'claude-3-5-sonnet-20241022', // Or use Claude's model name
+            model: 'claude-sonnet-4-20250514',
             max_tokens: 1024,
             system: systemPrompt,
             messages: [
@@ -54,9 +54,11 @@ export async function POST(request: NextRequest) {
           });
 
           let fullResponse = '';
-          for await (const chunk of messageStream) {
-            if (chunk.type === 'content_block_delta' && 'delta' in chunk && chunk.delta && typeof chunk.delta === 'object' && 'type' in chunk.delta && chunk.delta.type === 'text' && 'text' in chunk.delta) {
-              const text = chunk.delta.text as string;
+
+          // Correct streaming chunk handling for current SDK
+          for await (const event of messageStream) {
+            if (event.type === 'content_block_delta' && event.delta.type === 'text_delta') {
+              const text = event.delta.text;
               fullResponse += text;
               controller.enqueue(
                 new TextEncoder().encode(`data: ${JSON.stringify({ content: text })}\n\n`)
@@ -76,13 +78,26 @@ export async function POST(request: NextRequest) {
           controller.enqueue(new TextEncoder().encode('data: [DONE]\n\n'));
           controller.close();
         } catch (error: any) {
-          console.error('Error in Claude stream:', error);
-          console.error('Error details:', {
+          console.error('❌ Error in Claude stream:', error);
+          console.error('📋 Error details:', {
             message: error?.message,
             status: error?.status,
-            error: error?.error,
+            statusCode: error?.status_code,
+            type: error?.type,
+            apiError: error?.error,
           });
-          controller.error(error);
+
+          // Send error to client with full details
+          controller.enqueue(
+            new TextEncoder().encode(
+              `data: ${JSON.stringify({ 
+                error: 'Claude API Error',
+                details: error?.message,
+                status: error?.status || error?.status_code
+              })}\n\n`
+            )
+          );
+          controller.close();
         }
       },
     });
@@ -95,9 +110,12 @@ export async function POST(request: NextRequest) {
       },
     });
   } catch (error) {
-    console.error('Error in message route:', error);
+    console.error('❌ Error in message route:', error);
     return new Response(
-      JSON.stringify({ error: 'Internal server error' }),
+      JSON.stringify({ 
+        error: 'Internal server error',
+        details: (error as any)?.message 
+      }),
       { status: 500, headers: { 'Content-Type': 'application/json' } }
     );
   }
