@@ -1,0 +1,15 @@
+LOGO FILE LOCATION
+==================
+
+Please add your logo.png file to this directory (/public/logo.png)
+
+Your logo should be:
+- PNG format
+- Square aspect ratio (512x512 or larger recommended)
+- Contains: AWD monogram + Twin Faces Gemini symbol
+- Golden line art style
+
+After adding logo.png, run:
+  npm run generate-icons
+
+This will create all required app icons automatically.

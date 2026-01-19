@@ -1,0 +1,127 @@
+@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    /* The Office - Timeless Thinker Color Palette */
+    /* Primary Background - Warm Cream */
+    --color-background: #FAF7F2; /* warm cream */
+    --color-foreground: #2D2D2D; /* deep charcoal */
+    
+    /* Card Colors */
+    --color-card: #FFFFFF; /* pure white */
+    --color-card-foreground: #2D2D2D; /* deep charcoal */
+    --color-popover: #FFFFFF; /* pure white */
+    --color-popover-foreground: #2D2D2D; /* deep charcoal */
+    
+    /* Muted Colors - Light Blues */
+    --color-muted: #E8F4F8; /* light sky blue */
+    --color-muted-foreground: #2E6B8A; /* Mediterranean blue */
+    
+    /* Border & Input */
+    --color-border: rgba(46, 107, 138, 0.15); /* Mediterranean blue 15% */
+    --color-input: #FFFFFF; /* pure white */
+    --color-ring: #C9A227; /* warm gold */
+    
+    /* Brand Colors */
+    --color-primary: #2E6B8A; /* Mediterranean blue */
+    --color-primary-foreground: #FFFFFF; /* white */
+    --color-secondary: #E8F4F8; /* light sky blue */
+    --color-secondary-foreground: #2E6B8A; /* Mediterranean blue */
+    --color-accent: #C9A227; /* warm gold */
+    --color-accent-foreground: #2D2D2D; /* deep charcoal */
+    
+    /* Status Colors */
+    --color-success: #4A9B7A; /* sage green */
+    --color-success-foreground: #FFFFFF; /* white */
+    --color-warning: #D4A574; /* warm amber */
+    --color-warning-foreground: #2D2D2D; /* deep charcoal */
+    --color-error: #C97D7D; /* soft rose */
+    --color-error-foreground: #FFFFFF; /* white */
+    --color-destructive: #C97D7D; /* soft rose */
+    --color-destructive-foreground: #FFFFFF; /* white */
+    
+    /* The Office Specific Colors */
+    --color-mediterranean-blue: #2E6B8A; /* primary accent */
+    --color-light-blue: #E8F4F8; /* light sky blue */
+    --color-warm-gold: #C9A227; /* luxury highlight */
+    --color-warm-cream: #FAF7F2; /* background */
+    --color-deep-charcoal: #2D2D2D; /* text */
+    
+    /* Radius */
+    --radius: 0.75rem;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  
+  body {
+    @apply bg-background text-foreground;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    font-weight: 400;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+  
+  h1, h2, h3, h4, h5, h6 {
+    font-family: 'Cormorant Garamond', Georgia, serif;
+    font-weight: 500;
+    color: var(--color-foreground);
+    letter-spacing: -0.02em;
+  }
+  
+  button, .btn {
+    font-family: 'Inter', sans-serif;
+    font-weight: 500;
+  }
+}
+
+@layer utilities {
+  .elegant-shadow {
+    box-shadow: 0 2px 8px rgba(46, 107, 138, 0.08), 0 1px 3px rgba(46, 107, 138, 0.12);
+  }
+  
+  .elegant-shadow-lg {
+    box-shadow: 0 8px 24px rgba(46, 107, 138, 0.12), 0 4px 8px rgba(46, 107, 138, 0.08);
+  }
+  
+  .gold-border {
+    border: 2px solid var(--color-warm-gold);
+  }
+  
+  .mediterranean-border {
+    border: 1px solid rgba(46, 107, 138, 0.2);
+  }
+  
+  .persona-image {
+    filter: grayscale(100%) contrast(1.1);
+    border: 3px solid var(--color-warm-gold);
+  }
+  
+  .text-mediterranean {
+    color: var(--color-mediterranean-blue);
+  }
+  
+  .text-gold {
+    color: var(--color-warm-gold);
+  }
+  
+  .bg-light-blue {
+    background-color: var(--color-light-blue);
+  }
+  
+  .bg-mediterranean {
+    background-color: var(--color-mediterranean-blue);
+  }
+  
+  .bg-gold {
+    background-color: var(--color-warm-gold);
+  }
+}
