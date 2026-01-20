@@ -27,8 +27,11 @@ export function Button({
 
   const classes = `${baseStyles} ${variants[variant]} ${className}`;
 
-  if (asChild && typeof children === 'object' && 'props' in children) {
-    return <Link {...props} className={classes}>{children}</Link>;
+  if (asChild && React.isValidElement(children)) {
+    return React.cloneElement(children, {
+      ...children.props,
+      className: `${classes} ${children.props.className || ''}`.trim(),
+    });
   }
 
   return (

@@ -6,10 +6,10 @@ import { JokeDisplay } from '@/components/comedy/JokeDisplay';
 import { comedians } from '@/lib/constants/comedians';
 
 interface JokePageProps {
-  params: {
+  params: Promise<{
     comedian: string;
     category: string;
-  };
+  }>;
 }
 
 const categoryNames: Record<string, string> = {
@@ -23,14 +23,15 @@ const categoryNames: Record<string, string> = {
   wajed: "Wajed 👦"
 };
 
-export default function JokePage({ params }: JokePageProps) {
-  const comedian = comedians.find(c => c.id === params.comedian);
+export default async function JokePage({ params }: JokePageProps) {
+  const { comedian: comedianId, category } = await params;
+  const comedian = comedians.find(c => c.id === comedianId);
   
-  if (!comedian || !comedian.categories.includes(params.category as any)) {
+  if (!comedian || !comedian.categories.includes(category as any)) {
     notFound();
   }
 
-  const categoryName = categoryNames[params.category] || params.category;
+  const categoryName = categoryNames[category] || category;
 
   return (
     <div className="min-h-screen bg-[#FAF7F2]">
@@ -65,7 +66,7 @@ export default function JokePage({ params }: JokePageProps) {
           </div>
         </div>
         
-        <JokeDisplay comedian={comedian.id} category={params.category} />
+        <JokeDisplay comedian={comedian.id} category={category} />
       </div>
     </div>
   );

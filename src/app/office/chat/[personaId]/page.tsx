@@ -16,20 +16,20 @@ interface Message {
 
 // Persona data mapping
 const personas: Record<string, { name: string; archetype: string; imageUrl: string }> = {
-  'jack-nicholson': { name: 'Jack Nicholson', archetype: 'The Charmer', imageUrl: 'https://upload.wikimedia.org/wikipedia/commons/thumb/e/ec/Jack_Nicholson_2008.jpg/256px-Jack_Nicholson_2008.jpg' },
-  'steve-martin': { name: 'Steve Martin', archetype: 'The Nostalgic', imageUrl: 'https://upload.wikimedia.org/wikipedia/commons/thumb/4/4c/Steve_Martin_by_Gage_Skidmore.jpg/256px-Steve_Martin_by_Gage_Skidmore.jpg' },
-  'paul-newman': { name: 'Paul Newman', archetype: 'The Gentleman', imageUrl: 'https://upload.wikimedia.org/wikipedia/commons/thumb/0/06/Paul_Newman_1963.jpg/256px-Paul_Newman_1963.jpg' },
-  'robin-williams': { name: 'Robin Williams', archetype: 'The Heart', imageUrl: 'https://upload.wikimedia.org/wikipedia/commons/thumb/5/5b/Robin_Williams_2011.jpg/256px-Robin_Williams_2011.jpg' },
-  'morgan-freeman': { name: 'Morgan Freeman', archetype: 'The Voice', imageUrl: 'https://upload.wikimedia.org/wikipedia/commons/thumb/7/7f/Morgan_Freeman_2010.jpg/256px-Morgan_Freeman_2010.jpg' },
-  'sean-connery': { name: 'Sean Connery', archetype: 'The Bond', imageUrl: 'https://upload.wikimedia.org/wikipedia/commons/thumb/9/96/Sean_Connery_1983.jpg/256px-Sean_Connery_1983.jpg' },
-  'winston-churchill': { name: 'Winston Churchill', archetype: 'The Defiant', imageUrl: 'https://upload.wikimedia.org/wikipedia/commons/thumb/b/bc/Sir_Winston_Churchill_-_19086236948.jpg/256px-Sir_Winston_Churchill_-_19086236948.jpg' },
-  'omar-sharif': { name: 'Omar Sharif', archetype: 'The Arab Mirror', imageUrl: 'https://upload.wikimedia.org/wikipedia/commons/thumb/8/8a/Omar_Sharif_1963.jpg/256px-Omar_Sharif_1963.jpg' },
-  'warren-buffett': { name: 'Warren Buffett', archetype: 'The Oracle', imageUrl: 'https://upload.wikimedia.org/wikipedia/commons/thumb/d/d4/Warren_Buffett_Kansas_City_2019.jpg/256px-Warren_Buffett_Kansas_City_2019.jpg' },
-  'peter-sellers': { name: 'Peter Sellers', archetype: 'The Absurdist', imageUrl: 'https://upload.wikimedia.org/wikipedia/commons/thumb/5/5a/Peter_Sellers_1964.jpg/256px-Peter_Sellers_1964.jpg' },
-  'catherine-zeta-jones': { name: 'Catherine Zeta-Jones', archetype: 'The Flame', imageUrl: 'https://upload.wikimedia.org/wikipedia/commons/thumb/8/8a/Catherine_Zeta-Jones_2011.jpg/256px-Catherine_Zeta-Jones_2011.jpg' },
-  'andie-macdowell': { name: 'Andie MacDowell', archetype: 'The Grace', imageUrl: 'https://upload.wikimedia.org/wikipedia/commons/thumb/9/9e/Andie_MacDowell_2014.jpg/256px-Andie_MacDowell_2014.jpg' },
-  'audrey-hepburn': { name: 'Audrey Hepburn', archetype: 'The Icon', imageUrl: 'https://upload.wikimedia.org/wikipedia/commons/thumb/5/5e/Audrey_Hepburn_1956.jpg/256px-Audrey_Hepburn_1956.jpg' },
-  'sophia-loren': { name: 'Sophia Loren', archetype: 'The Fire', imageUrl: 'https://upload.wikimedia.org/wikipedia/commons/thumb/4/47/Sophia_Loren_1960.jpg/256px-Sophia_Loren_1960.jpg' },
+  'jack-nicholson': { name: 'Jack Nicholson', archetype: 'The Charmer', imageUrl: '/personas/Jack Nicholson.png' },
+  'steve-martin': { name: 'Steve Martin', archetype: 'The Nostalgic', imageUrl: '/personas/Steve Martin.png' },
+  'paul-newman': { name: 'Paul Newman', archetype: 'The Gentleman', imageUrl: '/personas/Paul Newman.png' },
+  'robin-williams': { name: 'Robin Williams', archetype: 'The Heart', imageUrl: '/personas/Robin Williams.png' },
+  'morgan-freeman': { name: 'Morgan Freeman', archetype: 'The Voice', imageUrl: '/personas/Morgan Freeman.png' },
+  'sean-connery': { name: 'Sean Connery', archetype: 'The Bond', imageUrl: '/personas/Sean Connery.png' },
+  'winston-churchill': { name: 'Winston Churchill', archetype: 'The Defiant', imageUrl: '/personas/Winston Churchill.png' },
+  'omar-sharif': { name: 'Omar Sharif', archetype: 'The Arab Mirror', imageUrl: '/personas/Omar Sharif.png' },
+  'warren-buffett': { name: 'Warren Buffett', archetype: 'The Oracle', imageUrl: '/personas/Warren Buffet.png' },
+  'peter-sellers': { name: 'Peter Sellers', archetype: 'The Absurdist', imageUrl: '/personas/Peter Sellers.png' },
+  'catherine-zeta-jones': { name: 'Catherine Zeta-Jones', archetype: 'The Flame', imageUrl: '/personas/Catherine Zeta-Jones.png' },
+  'andie-macdowell': { name: 'Andie MacDowell', archetype: 'The Grace', imageUrl: '/personas/Andi MacDowell.png' },
+  'audrey-hepburn': { name: 'Audrey Hepburn', archetype: 'The Icon', imageUrl: '/personas/Audrey Hepburn.png' },
+  'sophia-loren': { name: 'Sophia Loren', archetype: 'The Fire', imageUrl: '/personas/Sophia Loren.png' },
 };
 
 export default function ChatPage() {

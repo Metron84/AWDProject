@@ -6,13 +6,14 @@ import { CategoryGrid } from '@/components/comedy/CategoryGrid';
 import { comedians } from '@/lib/constants/comedians';
 
 interface ComedianPageProps {
-  params: {
+  params: Promise<{
     comedian: string;
-  };
+  }>;
 }
 
-export default function ComedianPage({ params }: ComedianPageProps) {
-  const comedian = comedians.find(c => c.id === params.comedian);
+export default async function ComedianPage({ params }: ComedianPageProps) {
+  const { comedian: comedianId } = await params;
+  const comedian = comedians.find(c => c.id === comedianId);
   
   if (!comedian) {
     notFound();

@@ -36,14 +36,19 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Check if joke exists in database
-    const { data: existingJoke } = await supabase
+    // Check if joke exists in database (use maybeSingle to avoid errors when no rows)
+    const { data: existingJoke, error: queryError } = await supabase
       .from('jokes')
       .select('content')
       .eq('comedian', comedian as 'rodney' | 'george' | 'don')
       .eq('category', category as 'marriage' | 'aging' | 'money' | 'family' | 'no_respect' | 'truth' | 'roast' | 'wajed')
       .limit(1)
-      .single();
+      .maybeSingle();
+
+    // Log query errors but continue (might be RLS issue, but we'll still generate)
+    if (queryError) {
+      console.warn('Supabase query error (continuing anyway):', queryError);
+    }
 
     if (existingJoke && 'content' in existingJoke) {
       return NextResponse.json({ joke: existingJoke.content });
@@ -57,7 +62,7 @@ export async function POST(request: NextRequest) {
 
     try {
       const message = await claudeClient.messages.create({
-        model: 'claude-3-5-sonnet-20241022',
+        model: 'claude-sonnet-4-20250514',
         max_tokens: 500,
         system: systemPrompt,
         messages: [{ role: 'user', content: userPrompt }],
@@ -69,7 +74,7 @@ export async function POST(request: NextRequest) {
         throw new Error('Empty joke content from Claude API');
       }
 
-      // Save to database
+      // Save to database (ignore errors - RLS might block INSERT, but that's okay)
       const { error: insertError } = await supabase.from('jokes').insert({
         comedian: comedian as 'rodney' | 'george' | 'don',
         category: category as 'marriage' | 'aging' | 'money' | 'family' | 'no_respect' | 'truth' | 'roast' | 'wajed',
@@ -77,7 +82,7 @@ export async function POST(request: NextRequest) {
       });
 
       if (insertError) {
-        console.error('Error saving joke to database:', insertError);
+        console.warn('Error saving joke to database (RLS may be blocking INSERT):', insertError);
         // Still return the joke even if DB save fails
       }
 
@@ -85,15 +90,24 @@ export async function POST(request: NextRequest) {
     } catch (apiError: any) {
       console.error('Claude API error:', apiError);
       const errorMessage = apiError?.message || 'Failed to generate joke';
+      
+      // Provide more detailed error info
+      let detailedError = errorMessage;
+      if (apiError?.status === 401) {
+        detailedError = 'Invalid Anthropic API key. Please check your ANTHROPIC_API_KEY environment variable.';
+      } else if (apiError?.status === 429) {
+        detailedError = 'Rate limit exceeded. Please try again later.';
+      }
+      
       return NextResponse.json(
-        { error: errorMessage, joke: null },
+        { error: detailedError, joke: null },
         { status: 500 }
       );
     }
-  } catch (error) {
+  } catch (error: any) {
     console.error('Error generating joke:', error);
     return NextResponse.json(
-      { error: 'Failed to generate joke' },
+      { error: error?.message || 'Failed to generate joke' },
       { status: 500 }
     );
   }

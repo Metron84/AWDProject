@@ -1,34 +1,89 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import Link from 'next/link';
 import { ArrowLeftIcon, ArrowRightIcon, ShareIcon } from '@heroicons/react/24/outline';
 import { Button } from '@/components/common/Button';
-import { jokes } from '@/lib/constants/jokes';
 import { ShareCard } from '@/components/shared/ShareCard';
+import { comedians } from '@/lib/constants/comedians';
 
 interface JokeDisplayProps {
   comedian: string;
   category: string;
 }
 
+interface Joke {
+  id: string;
+  text: string;
+  attribution: string;
+}
+
 export function JokeDisplay({ comedian, category }: JokeDisplayProps) {
+  const [jokes, setJokes] = useState<Joke[]>([]);
   const [currentJokeIndex, setCurrentJokeIndex] = useState(0);
   const [showShareCard, setShowShareCard] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  // Filter jokes for this comedian and category
-  const filteredJokes = jokes.filter(
-    joke => joke.comedian === comedian && joke.category === category
-  );
+  const comedianData = comedians.find(c => c.id === comedian);
+  const comedianName = comedianData?.name || 'Comedian';
 
-  const currentJoke = filteredJokes[currentJokeIndex];
+  // Fetch a new joke from the API
+  const fetchJoke = useCallback(async () => {
+    try {
+      setIsLoading(true);
+      setError(null);
+      
+      const response = await fetch('/api/office/comedy/joke', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ comedian, category }),
+      });
 
-  const handleNext = () => {
-    setCurrentJokeIndex((prev) => (prev + 1) % filteredJokes.length);
-  };
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to fetch joke');
+      }
+
+      const data = await response.json();
+      const newJoke: Joke = {
+        id: Date.now().toString(),
+        text: data.joke,
+        attribution: comedianName,
+      };
+
+      setJokes(prev => [...prev, newJoke]);
+      setCurrentJokeIndex(prev => prev + 1);
+    } catch (err: any) {
+      console.error('Error fetching joke:', err);
+      setError(err.message || 'Failed to load joke');
+    } finally {
+      setIsLoading(false);
+    }
+  }, [comedian, category, comedianName]);
+
+  // Load initial joke on mount
+  useEffect(() => {
+    fetchJoke();
+  }, [fetchJoke]);
+
+  const currentJoke = jokes[currentJokeIndex];
+
+  const handleNext = useCallback(() => {
+    // If we're at the last joke, fetch a new one
+    if (currentJokeIndex === jokes.length - 1) {
+      fetchJoke();
+    } else {
+      setCurrentJokeIndex(prev => prev + 1);
+    }
+  }, [currentJokeIndex, jokes.length, fetchJoke]);
 
   const handlePrevious = () => {
-    setCurrentJokeIndex((prev) => (prev - 1 + filteredJokes.length) % filteredJokes.length);
+    if (currentJokeIndex > 0) {
+      setCurrentJokeIndex(prev => prev - 1);
+    }
   };
 
   const handleShare = () => {
@@ -37,19 +92,45 @@ export function JokeDisplay({ comedian, category }: JokeDisplayProps) {
 
   // Auto-advance joke after 30 seconds
   useEffect(() => {
-    if (filteredJokes.length <= 1) return;
+    if (jokes.length === 0) return;
     
     const timer = setTimeout(() => {
       handleNext();
     }, 30000);
 
     return () => clearTimeout(timer);
-  }, [currentJokeIndex, filteredJokes.length]);
+  }, [currentJokeIndex, jokes.length, handleNext]);
 
-  if (!currentJoke || filteredJokes.length === 0) {
+  if (isLoading && jokes.length === 0) {
     return (
       <div className="text-center py-12">
-        <p className="text-[#2D2D2D]">No jokes found in this category.</p>
+        <div className="animate-pulse">
+          <div className="h-8 bg-gray-200 rounded w-3/4 mx-auto mb-4"></div>
+          <div className="h-8 bg-gray-200 rounded w-1/2 mx-auto"></div>
+        </div>
+        <p className="text-[#2D2D2D] mt-4">Loading joke...</p>
+      </div>
+    );
+  }
+
+  if (error && jokes.length === 0) {
+    return (
+      <div className="text-center py-12">
+        <p className="text-red-600 mb-4">⚠️ {error}</p>
+        <Button variant="outline" onClick={fetchJoke} className="mr-4">
+          Try Again
+        </Button>
+        <Link href={`/office/comedy/${comedian}`} className="inline-block">
+          <Button variant="outline">Back to Categories</Button>
+        </Link>
+      </div>
+    );
+  }
+
+  if (!currentJoke) {
+    return (
+      <div className="text-center py-12">
+        <p className="text-[#2D2D2D]">No jokes available.</p>
         <Link href={`/office/comedy/${comedian}`} className="mt-4 inline-block">
           <Button variant="outline">Back to Categories</Button>
         </Link>
@@ -81,7 +162,7 @@ export function JokeDisplay({ comedian, category }: JokeDisplayProps) {
         </div>
         
         <div className="mt-8 text-sm text-[#2E6B8A]">
-          {currentJokeIndex + 1} of {filteredJokes.length}
+          {currentJokeIndex + 1} {jokes.length > currentJokeIndex + 1 ? `of ${jokes.length}` : '(new)'}
         </div>
       </div>
 
@@ -90,20 +171,20 @@ export function JokeDisplay({ comedian, category }: JokeDisplayProps) {
         <Button
           variant="outline"
           onClick={handlePrevious}
-          disabled={filteredJokes.length <= 1}
+          disabled={currentJokeIndex === 0 || isLoading}
         >
           <ArrowLeftIcon className="w-4 h-4 mr-2 inline" />
           Previous
         </Button>
         
-        <Button onClick={handleShare}>
+        <Button onClick={handleShare} disabled={isLoading}>
           <ShareIcon className="w-4 h-4 mr-2 inline" />
           Share
         </Button>
         
-        <Button onClick={handleNext} disabled={filteredJokes.length <= 1}>
-          Next
-          <ArrowRightIcon className="w-4 h-4 ml-2 inline" />
+        <Button onClick={handleNext} disabled={isLoading}>
+          {isLoading ? 'Loading...' : 'Next'}
+          {!isLoading && <ArrowRightIcon className="w-4 h-4 ml-2 inline" />}
         </Button>
       </div>
 
