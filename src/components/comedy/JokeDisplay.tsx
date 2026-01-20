@@ -42,22 +42,37 @@ export function JokeDisplay({ comedian, category }: JokeDisplayProps) {
         body: JSON.stringify({ comedian, category }),
       });
 
+      const data = await response.json();
+
       if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || 'Failed to fetch joke');
+        throw new Error(data.error || `HTTP ${response.status}: Failed to fetch joke`);
       }
 
-      const data = await response.json();
+      // Validate response has joke
+      if (!data.joke || typeof data.joke !== 'string' || data.joke.trim().length === 0) {
+        console.error('Invalid API response:', data);
+        throw new Error('Invalid response: joke content is missing or empty');
+      }
+
       const newJoke: Joke = {
         id: Date.now().toString(),
         text: data.joke,
         attribution: comedianName,
       };
 
-      setJokes(prev => [...prev, newJoke]);
-      setCurrentJokeIndex(prev => prev + 1);
+      setJokes(prev => {
+        const updated = [...prev, newJoke];
+        // FIX: Set index to the new joke (last item in array)
+        setCurrentJokeIndex(updated.length - 1);
+        return updated;
+      });
     } catch (err: any) {
       console.error('Error fetching joke:', err);
+      console.error('Error details:', {
+        message: err.message,
+        comedian,
+        category
+      });
       setError(err.message || 'Failed to load joke');
     } finally {
       setIsLoading(false);
