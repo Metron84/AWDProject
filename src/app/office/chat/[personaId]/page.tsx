@@ -95,6 +95,17 @@ export default function ChatPage() {
     setInput('');
     setIsLoading(true);
 
+    const assistantMessageId = (Date.now() + 1).toString();
+    let assistantMessage = '';
+
+    // Initialize assistant message placeholder before API call for error handling
+    setMessages((prev) => [...prev, {
+      id: assistantMessageId,
+      role: 'assistant',
+      content: '',
+      createdAt: new Date(),
+    }]);
+
     try {
       const response = await fetch('/api/office/chat/message', {
         method: 'POST',
@@ -106,19 +117,13 @@ export default function ChatPage() {
         }),
       });
 
-      if (!response.ok) throw new Error('Failed to get response');
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.details || errorData.error || `HTTP ${response.status}: Failed to get response`);
+      }
 
       const reader = response.body?.getReader();
       const decoder = new TextDecoder();
-      let assistantMessage = '';
-
-      const assistantMessageId = (Date.now() + 1).toString();
-      setMessages((prev) => [...prev, {
-        id: assistantMessageId,
-        role: 'assistant',
-        content: '',
-        createdAt: new Date(),
-      }]);
 
       while (reader) {
         const { done, value } = await reader.read();
@@ -134,6 +139,18 @@ export default function ChatPage() {
             
             try {
               const parsed = JSON.parse(data);
+              // Handle API errors
+              if (parsed.error) {
+                console.error('API Error:', parsed);
+                const errorMessage = parsed.details || parsed.error || 'An error occurred while processing your message.';
+                setMessages((prev) => prev.map((msg) =>
+                  msg.id === assistantMessageId
+                    ? { ...msg, content: `⚠️ Error: ${errorMessage}` }
+                    : msg
+                ));
+                break; // Stop processing stream on error
+              }
+              // Handle content chunks
               if (parsed.content) {
                 assistantMessage += parsed.content;
                 setMessages((prev) => prev.map((msg) =>
@@ -160,9 +177,14 @@ export default function ChatPage() {
         sessionId,
         messages: updatedMessages,
       }));
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error sending message:', error);
-      setMessages((prev) => prev.slice(0, -1));
+      // Show error message to user, replacing the empty assistant message
+      setMessages((prev) => prev.map((msg) =>
+        msg.id === assistantMessageId
+          ? { ...msg, content: `⚠️ Error: ${error?.message || 'Failed to send message. Please try again.'}` }
+          : msg
+      ));
     } finally {
       setIsLoading(false);
     }

@@ -1,17 +1,29 @@
 import Anthropic from '@anthropic-ai/sdk';
 
-/**
- * Initializes the Anthropic Claude client with the API key from environment variables.
- * @returns {Anthropic} Configured Claude client instance.
- */
-const anthropicApiKey = process.env.ANTHROPIC_API_KEY;
+let claudeClientInstance: Anthropic | null = null;
 
-if (!anthropicApiKey) {
-  throw new Error('Missing ANTHROPIC_API_KEY environment variable');
+function getClaudeClient(): Anthropic {
+  if (!claudeClientInstance) {
+    const anthropicApiKey = process.env.ANTHROPIC_API_KEY;
+
+    if (!anthropicApiKey) {
+      throw new Error('Missing ANTHROPIC_API_KEY environment variable. Please set it in your Vercel environment variables.');
+    }
+
+    claudeClientInstance = new Anthropic({
+      apiKey: anthropicApiKey,
+    });
+  }
+
+  return claudeClientInstance;
 }
 
-export const claudeClient = new Anthropic({
-  apiKey: anthropicApiKey,
+export const claudeClient = new Proxy({} as Anthropic, {
+  get(_target, prop) {
+    const client = getClaudeClient();
+    const value = (client as any)[prop];
+    return typeof value === 'function' ? value.bind(client) : value;
+  }
 });
 
 export default claudeClient;
